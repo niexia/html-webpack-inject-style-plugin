@@ -5,9 +5,7 @@ functionality by changing the default inject assets method to dynamically inject
 
 [webpack-rtl-plugin](https://github.com/romainberger/webpack-rtl-plugin) is plugin to use to create a second css bundle, processed to be rtl, rtl css bundle default filename is `xxx.rtl.css`. When html-webpack-plugin will generate an HTML5 file, they are all included with <link> tags in the HTML head by default.
 
-Loading all styles may affect the page display, so it is expected that the corresponding styles can be loaded according to the language type, instead of being injected into index.html by default.
-
-This plugin is used to help us complete this work. It uses cookies to determine the language type, and then decides which style to load.
+It is expected that the corresponding styles can be loaded according to the language type, instead of all styles being injected into index.html by default.This plugin is used to help us complete this work. It uses cookies to determine the language type, and then decides which style to load.
 
 Installation
 ------------
