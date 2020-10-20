@@ -1,6 +1,6 @@
 'use strict';
 
-function HtmlWebpackInjectStylePlugin(options) {
+function HtmlWebpackInjectStylePlugin (options) {
   var userOptions = options || {};
   this.rtlRegexp = userOptions.rtlRegexp;
   this.PluginName = 'HtmlWebpackInjectStylePlugin';
@@ -16,7 +16,7 @@ HtmlWebpackInjectStylePlugin.prototype.apply = function (compiler) {
   }
 };
 
-HtmlWebpackInjectStylePlugin.prototype.applyCompilation = function applyCompilation(compilation) {
+HtmlWebpackInjectStylePlugin.prototype.applyCompilation = function applyCompilation (compilation) {
   var self = this;
   if ('hooks' in compilation) {
     if (!compilation.hooks.htmlWebpackPluginAlterAssetTags) {
@@ -31,7 +31,7 @@ HtmlWebpackInjectStylePlugin.prototype.applyCompilation = function applyCompilat
 
 HtmlWebpackInjectStylePlugin.prototype.processPluginData = function (htmlPluginData, callback) {
   var self = this;
-  
+
   // validate the `rtlRegexp`
   // throw a error if the `rtlRegexp` is invalid
   if (!self.rtlRegexp) {
@@ -47,7 +47,7 @@ HtmlWebpackInjectStylePlugin.prototype.processPluginData = function (htmlPluginD
   } else {
     return Promise.resolve(result);
   }
-}
+};
 
 HtmlWebpackInjectStylePlugin.prototype.injectScript = function (pluginData) {
   var { head, styleAssets } = this.filterStyleAssets(pluginData);
@@ -72,7 +72,7 @@ HtmlWebpackInjectStylePlugin.prototype.injectScript = function (pluginData) {
         })
       })();
     `
-  }
+  };
 
   return {
     head: [scriptNode, ...head],
@@ -100,7 +100,7 @@ HtmlWebpackInjectStylePlugin.prototype.filterStyleAssets = function (pluginData)
   return {
     head,
     styleAssets
-  }
-}
+  };
+};
 
 module.exports = HtmlWebpackInjectStylePlugin;

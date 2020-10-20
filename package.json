@@ -4,7 +4,9 @@
   "description": "Dynamically inject css style assets when using webpack-rtl-plugin",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublish": "npm run test",
+    "pretest": "semistandard",
+    "test": "jasmine"
   },
   "repository": {
     "type": "git",
@@ -21,5 +23,16 @@
   "bugs": {
     "url": "https://github.com/niexias/html-webpack-inject-style-plugin/issues"
   },
-  "homepage": "https://github.com/niexias/html-webpack-inject-style-plugin#readme"
+  "homepage": "https://github.com/niexias/html-webpack-inject-style-plugin#readme",
+  "devDependencies": {
+    "cheerio": "^0.22.0",
+    "css-loader": "^0.25.0",
+    "html-webpack-plugin": "^3.2.0",
+    "jasmine": "^2.4.1",
+    "mini-css-extract-plugin": "^0.4.2",
+    "rimraf": "^2.5.2",
+    "semistandard": "^7.0.5",
+    "webpack": "^4.20.2",
+    "webpack-rtl-plugin": "^2.0.0"
+  }
 }
