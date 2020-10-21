@@ -28,12 +28,39 @@ var HtmlWebpackExcludeAssetsPlugin = require('html-webpack-inject-style-plugin')
 Add the plugin to your webpack config as follows:
 
 ```javascript
-plugins: [
-  new HtmlWebpackPlugin(),
-  new HtmlWebpackExcludeAssetsPlugin({
-    rtlRegexp: /lang_type=ar/
-  })
-]  
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const WebpackRTLPlugin = require('webpack-rtl-plugin');
+const HtmlWebpackInjectStylePlugin = require('html-webpack-inject-style-plugin');
+
+module.exports ={
+  entry: './entry.js',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+  },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader'
+        ]
+      }
+    ]
+  },
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: 'style.css'
+    }),
+    new WebpackRTLPlugin(),
+    new HtmlWebpackPlugin(),
+    new HtmlWebpackInjectStylePlugin({
+      rtlRegexp: /lang_type=ar/
+    })
+  ]
+}
 ```
 
 The above configuration will inject a script in the head, When the page is parsed, execute to determine whether the current language is an RTL language, such as Arabic. If it is RTL language, inject `xxx.rtl.css` style otherwise inject `xxx.css` style.
