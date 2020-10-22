@@ -19,13 +19,7 @@ $ npm install --save-dev html-webpack-inject-style-plugin
 
 Usage
 -----------
-Require the plugin in your webpack config:
-
-```javascript
-var HtmlWebpackExcludeAssetsPlugin = require('html-webpack-inject-style-plugin');
-```
-
-Add the plugin to your webpack config as follows:
+Require the plugin in your webpack config, and add the plugin to your webpack config as follows:
 
 ```javascript
 const path = require('path');
