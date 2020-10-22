@@ -54,7 +54,7 @@ describe('HtmlWebpackInjectStylePlugin', function () {
     });
   });
 
-  it('should get compilation error when the option `rtlRegexp` is not set', function (done) {
+  it('should get compilation error when the option `isRtl` is not set', function (done) {
     webpack({
       entry: path.join(__dirname, 'fixtures', 'entry.js'),
       output: {
@@ -84,7 +84,7 @@ describe('HtmlWebpackInjectStylePlugin', function () {
     });
   });
 
-  it('should get compilation error when the option `rtlRegexp` is not a regular expression', function (done) {
+  it('should get compilation error when the option `isRtl` is not a regular expression', function (done) {
     webpack({
       entry: path.join(__dirname, 'fixtures', 'entry.js'),
       output: {
@@ -106,13 +106,13 @@ describe('HtmlWebpackInjectStylePlugin', function () {
         new WebpackRTLPlugin(),
         new HtmlWebpackPlugin(),
         new HtmlWebpackInjectStylePlugin({
-          rtlRegexp: 'ar'
+          isRtl: 'ar'
         })
       ]
     }, function (err, stats) {
       expect(err).toBeFalsy();
       expect(stats.hasErrors()).toBe(true);
-      expect(stats.compilation.errors.toString()).toContain('The rtlRegexp must be a Regexp');
+      expect(stats.compilation.errors.toString()).toContain('The isRtl must be a Regexp');
       done();
     });
   });
@@ -139,7 +139,7 @@ describe('HtmlWebpackInjectStylePlugin', function () {
         new WebpackRTLPlugin(),
         new HtmlWebpackPlugin(),
         new HtmlWebpackInjectStylePlugin({
-          rtlRegexp: /lang_type=ar/
+          isRtl: /lang_type=ar/
         })
       ]
     }, function (err) {

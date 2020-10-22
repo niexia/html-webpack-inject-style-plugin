@@ -2,7 +2,7 @@
 
 function HtmlWebpackInjectStylePlugin (options) {
   var userOptions = options || {};
-  this.rtlRegexp = userOptions.rtlRegexp;
+  this.isRtl = userOptions.isRtl;
   this.PluginName = 'HtmlWebpackInjectStylePlugin';
 }
 
@@ -32,13 +32,13 @@ HtmlWebpackInjectStylePlugin.prototype.applyCompilation = function applyCompilat
 HtmlWebpackInjectStylePlugin.prototype.processPluginData = function (htmlPluginData, callback) {
   var self = this;
 
-  // validate the `rtlRegexp`
-  // throw a error if the `rtlRegexp` is invalid
-  if (!self.rtlRegexp) {
-    throw new Error('The rtlRegexp option is required.');
+  // validate the `isRtl`
+  // throw a error if the `isRtl` is invalid
+  if (!self.isRtl) {
+    throw new Error('The isRtl option is required.');
   }
-  if (self.rtlRegexp.constructor !== RegExp) {
-    throw new Error('The rtlRegexp must be a Regexp.');
+  if (self.isRtl.constructor !== RegExp) {
+    throw new Error('The isRtl must be a Regexp.');
   }
 
   var result = self.injectScript(htmlPluginData);
@@ -60,7 +60,7 @@ HtmlWebpackInjectStylePlugin.prototype.injectScript = function (pluginData) {
     },
     innerHTML: `
       (function (){
-        var isRTL = ${this.rtlRegexp}.test(document.cookie);
+        var isRTL = ${this.isRtl}.test(document.cookie);
         var head = document.querySelector('head');
         ${styleAssetsHref}.forEach(function (href) {
           var fullhref = isRTL ? href + '.rtl.css' : href + '.css';

@@ -51,7 +51,7 @@ module.exports ={
     new WebpackRTLPlugin(),
     new HtmlWebpackPlugin(),
     new HtmlWebpackInjectStylePlugin({
-      rtlRegexp: /lang_type=ar/
+      isRtl: /lang_type=ar/
     })
   ]
 }
@@ -105,4 +105,4 @@ Options
 ----------
 |Name|Type|Default|required|Description|
 |:--:|:--:|:-----:|:----:|:----------|
-|**`rtlRegexp`**|`{RegExp}`|`/`| `true` |The regexp to use to process cookies to determine whether the current page is in RTL language.|
+|**`isRtl`**|`{RegExp}`|`/`| `true` |The regexp to use to process cookies to determine whether the current page is in RTL language.|
