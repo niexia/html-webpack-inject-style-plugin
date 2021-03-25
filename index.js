@@ -1,5 +1,5 @@
 'use strict';
-
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 function HtmlWebpackInjectStylePlugin (options) {
   var userOptions = options || {};
   this.isRtl = userOptions.isRtl;
@@ -18,30 +18,32 @@ HtmlWebpackInjectStylePlugin.prototype.apply = function (compiler) {
 
 HtmlWebpackInjectStylePlugin.prototype.applyCompilation = function applyCompilation (compilation) {
   var self = this;
-  if ('hooks' in compilation) {
+
+  // process
+  if (HtmlWebpackPlugin.getHooks) {
+    // HtmlWebpackPlugin version 4.0.0-beta.5
+    HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync(this.PluginName, self.processPluginGroup.bind(self));
+  } else if ('hooks' in compilation) {
+    // HtmlWebpackPlugin version ^3.2.0
     if (!compilation.hooks.htmlWebpackPluginAlterAssetTags) {
       throw new Error('The expected HtmlWebpackPlugin hook was not found! Ensure HtmlWebpackPlugin is installed and' +
         ' was initialized before this plugin.');
     }
     compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(this.PluginName, self.processPluginData.bind(self));
   } else {
+    // HtmlWebpackPlugin version 3.2.0
     compilation.plugin('html-webpack-plugin-alter-asset-tags', self.processPluginData.bind(self));
   }
 };
 
-HtmlWebpackInjectStylePlugin.prototype.processPluginData = function (htmlPluginData, callback) {
-  var self = this;
-
-  // validate the `isRtl`
-  // throw a error if the `isRtl` is invalid
-  if (!self.isRtl) {
-    throw new Error('The isRtl option is required.');
-  }
-  if (self.isRtl.constructor !== RegExp) {
-    throw new Error('The isRtl must be a Regexp.');
-  }
-
-  var result = self.injectScript(htmlPluginData);
+HtmlWebpackInjectStylePlugin.prototype.processPluginGroup = function (htmlPluginData, callback) {
+  this.validateOptions();
+  var { head, styleAssets } = this.filterStyleAssets(htmlPluginData, 'headTags');
+  var scriptNode = this.generateScriptNode(styleAssets, this.isRtl);
+  var result = {
+    ...htmlPluginData,
+    headTags: [scriptNode, ...head]
+  };
   if (callback) {
     callback(null, result);
   } else {
@@ -49,44 +51,36 @@ HtmlWebpackInjectStylePlugin.prototype.processPluginData = function (htmlPluginD
   }
 };
 
-HtmlWebpackInjectStylePlugin.prototype.injectScript = function (pluginData) {
-  var { head, styleAssets } = this.filterStyleAssets(pluginData);
-  var styleAssetsHref = JSON.stringify(styleAssets.map(tag => tag.attributes.href.match(/(.*)\.css$/)[1]));
-  var scriptNode = {
-    tagName: 'script',
-    closeTag: true,
-    attributes: {
-      type: 'text/javascript'
-    },
-    innerHTML: `
-      (function (){
-        var isRTL = ${this.isRtl}.test(document.cookie);
-        var head = document.querySelector('head');
-        ${styleAssetsHref}.forEach(function (href) {
-          var fullhref = isRTL ? href + '.rtl.css' : href + '.css';
-          var linkTag = document.createElement("link");
-          linkTag.rel = "stylesheet";
-          linkTag.type = "text/css";
-          linkTag.href = fullhref;
-          head.appendChild(linkTag);
-        })
-      })();
-    `
+HtmlWebpackInjectStylePlugin.prototype.processPluginData = function (htmlPluginData, callback) {
+  this.validateOptions();
+  var { head, styleAssets } = this.filterStyleAssets(htmlPluginData);
+  var scriptNode = this.generateScriptNode(styleAssets, this.isRtl);
+  var result = {
+    ...htmlPluginData,
+    head: [scriptNode, ...head]
   };
-
-  return {
-    head: [scriptNode, ...head],
-    body: pluginData.body,
-    plugin: pluginData.plugin,
-    chunks: pluginData.chunks,
-    outputName: pluginData.outputName
-  };
+  if (callback) {
+    callback(null, result);
+  } else {
+    return Promise.resolve(result);
+  }
 };
 
-HtmlWebpackInjectStylePlugin.prototype.filterStyleAssets = function (pluginData) {
+HtmlWebpackInjectStylePlugin.prototype.validateOptions = function () {
+  // validate the `isRtl`
+  // throw a error if the `isRtl` is invalid
+  if (!this.isRtl) {
+    throw new Error('The isRtl option is required.');
+  }
+  if (this.isRtl.constructor !== RegExp) {
+    throw new Error('The isRtl must be a Regexp.');
+  }
+};
+
+HtmlWebpackInjectStylePlugin.prototype.filterStyleAssets = function (pluginData, headKey = 'head') {
   var head = [];
   var styleAssets = [];
-  pluginData.head.forEach(tag => {
+  pluginData[headKey].forEach(tag => {
     var tagName = tag.tagName;
     var href = tag.attributes.href;
     if (tagName === 'link' && /\.css/.test(href)) {
@@ -100,6 +94,31 @@ HtmlWebpackInjectStylePlugin.prototype.filterStyleAssets = function (pluginData)
   return {
     head,
     styleAssets
+  };
+};
+
+HtmlWebpackInjectStylePlugin.prototype.generateScriptNode = function (styleAssets, isRtl) {
+  var styleAssetsHref = JSON.stringify(styleAssets.map(tag => tag.attributes.href.match(/(.*)\.css$/)[1]));
+  return {
+    tagName: 'script',
+    closeTag: true,
+    attributes: {
+      type: 'text/javascript'
+    },
+    innerHTML: `
+      (function (){
+        var isRTL = ${isRtl}.test(document.cookie);
+        var head = document.querySelector('head');
+        ${styleAssetsHref}.forEach(function (href) {
+          var fullhref = isRTL ? href + '.rtl.css' : href + '.css';
+          var linkTag = document.createElement("link");
+          linkTag.rel = "stylesheet";
+          linkTag.type = "text/css";
+          linkTag.href = fullhref;
+          head.appendChild(linkTag);
+        })
+      })();
+    `
   };
 };
 

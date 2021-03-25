@@ -48,7 +48,7 @@ describe('HtmlWebpackInjectStylePlugin', function () {
         var $ = cheerio.load(data);
         expect($('link[href="style.css"]').toString()).toBe('<link href="style.css" rel="stylesheet">');
         expect($('link[href="style.rtl.css"]').toString()).toBe('<link href="style.rtl.css" rel="stylesheet">');
-        expect($('script[src="main.js"]').toString()).toBe('<script type="text/javascript" src="main.js"></script>');
+        expect($('script[src="main.js"]').toString()).toMatch(/<script .*src="main.js"><\/script>/);
         done();
       });
     });
@@ -150,7 +150,7 @@ describe('HtmlWebpackInjectStylePlugin', function () {
         var $ = cheerio.load(data);
         expect($('link[href="style.css"]').toString()).toBe('');
         expect($('link[href="style.rtl.css"]').toString()).toBe('');
-        expect($('script[src="main.js"]').toString()).toBe('<script type="text/javascript" src="main.js"></script>');
+        expect($('script[src="main.js"]').toString()).toMatch(/<script .*src="main.js"><\/script>/);
         expect($('script:not([src])').html()).toContain('var isRTL = /lang_type=ar/.test(document.cookie);');
         done();
       });
