@@ -151,7 +151,7 @@ describe('HtmlWebpackInjectStylePlugin', function () {
         expect($('link[href="style.css"]').toString()).toBe('');
         expect($('link[href="style.rtl.css"]').toString()).toBe('');
         expect($('script[src="main.js"]').toString()).toMatch(/<script .*src="main.js"><\/script>/);
-        expect($('script:not([src])').html()).toContain('var isRTL = /lang_type=ar/.test(document.cookie);');
+        expect($('script:not([src])').html()).toContain('new Function("return /lang_type=ar/.test(document.cookie)")');
         done();
       });
       done();
