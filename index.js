@@ -72,8 +72,11 @@ HtmlWebpackInjectStylePlugin.prototype.validateOptions = function () {
   if (!this.isRtl) {
     throw new Error('The isRtl option is required.');
   }
-  if (this.isRtl.constructor !== RegExp) {
-    throw new Error('The isRtl must be a Regexp.');
+  if (
+      this.isRtl.constructor !== RegExp &&
+      typeof this.isRtl !== 'function'
+    ) {
+    throw new Error('The isRtl must be a Regexp or Function.');
   }
 };
 
@@ -99,6 +102,9 @@ HtmlWebpackInjectStylePlugin.prototype.filterStyleAssets = function (pluginData,
 
 HtmlWebpackInjectStylePlugin.prototype.generateScriptNode = function (styleAssets, isRtl) {
   var styleAssetsHref = JSON.stringify(styleAssets.map(tag => tag.attributes.href.match(/(.*)\.css$/)[1]));
+  var genRtlFun = typeof isRtl === 'function'
+    ? `new Function("return (${isRtl.toString().split('\n').join('\\n')})(window)")`
+    : `new Function("return ${isRtl}.test(document.cookie)")`;
   return {
     tagName: 'script',
     closeTag: true,
@@ -107,10 +113,10 @@ HtmlWebpackInjectStylePlugin.prototype.generateScriptNode = function (styleAsset
     },
     innerHTML: `
       (function (){
-        var isRTL = ${isRtl}.test(document.cookie);
+        var isRTL = ${genRtlFun};
         var head = document.querySelector('head');
         ${styleAssetsHref}.forEach(function (href) {
-          var fullhref = isRTL ? href + '.rtl.css' : href + '.css';
+          var fullhref = isRTL() ? href + '.rtl.css' : href + '.css';
           var linkTag = document.createElement("link");
           linkTag.rel = "stylesheet";
           linkTag.type = "text/css";

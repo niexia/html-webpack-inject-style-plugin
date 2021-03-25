@@ -84,7 +84,7 @@ describe('HtmlWebpackInjectStylePlugin', function () {
     });
   });
 
-  it('should get compilation error when the option `isRtl` is not a regular expression', function (done) {
+  it('should get compilation error when the option `isRtl` is not a regular expression or function', function (done) {
     webpack({
       entry: path.join(__dirname, 'fixtures', 'entry.js'),
       output: {
@@ -152,6 +152,50 @@ describe('HtmlWebpackInjectStylePlugin', function () {
         expect($('link[href="style.rtl.css"]').toString()).toBe('');
         expect($('script[src="main.js"]').toString()).toMatch(/<script .*src="main.js"><\/script>/);
         expect($('script:not([src])').html()).toContain('var isRTL = /lang_type=ar/.test(document.cookie);');
+        done();
+      });
+      done();
+    });
+  });
+
+  it('isRtl is a function and should not inject any style link but a script to create links', function (done) {
+    function isRtl () {
+      return true;
+    }
+    webpack({
+      entry: path.join(__dirname, 'fixtures', 'entry.js'),
+      output: {
+        path: OUTPUT_DIR
+      },
+      module: {
+        rules: [{
+          test: /\.css$/,
+          use: [
+            MiniCssExtractPlugin.loader,
+            'css-loader'
+          ]
+        }]
+      },
+      plugins: [
+        new MiniCssExtractPlugin({
+          filename: 'style.css'
+        }),
+        new WebpackRTLPlugin(),
+        new HtmlWebpackPlugin(),
+        new HtmlWebpackInjectStylePlugin({
+          isRtl
+        })
+      ]
+    }, function (err) {
+      expect(err).toBeFalsy();
+      var htmlFile = path.resolve(OUTPUT_DIR, 'index.html');
+      fs.readFile(htmlFile, 'utf8', function (er, data) {
+        expect(er).toBeFalsy();
+        var $ = cheerio.load(data);
+        expect($('link[href="style.css"]').toString()).toBe('');
+        expect($('link[href="style.rtl.css"]').toString()).toBe('');
+        expect($('script[src="main.js"]').toString()).toMatch(/<script .*src="main.js"><\/script>/);
+        expect($('script:not([src])').html()).toContain(isRtl.toString().split('\n').join('\\n'));
         done();
       });
       done();
