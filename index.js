@@ -103,7 +103,7 @@ HtmlWebpackInjectStylePlugin.prototype.filterStyleAssets = function (pluginData,
 HtmlWebpackInjectStylePlugin.prototype.generateScriptNode = function (styleAssets, isRtl) {
   var styleAssetsHref = JSON.stringify(styleAssets.map(tag => tag.attributes.href.match(/(.*)\.css$/)[1]));
   var genRtlFun = typeof isRtl === 'function'
-    ? `new Function("return (${isRtl.toString().split('\n').join('\\n')})(window)")`
+    ? `new Function("href","return (${isRtl.toString().split('\n').join('\\n')})(window, href)")`
     : `new Function("return ${isRtl}.test(document.cookie)")`;
   return {
     tagName: 'script',
@@ -116,7 +116,7 @@ HtmlWebpackInjectStylePlugin.prototype.generateScriptNode = function (styleAsset
         var isRTL = ${genRtlFun};
         var head = document.querySelector('head');
         ${styleAssetsHref}.forEach(function (href) {
-          var fullhref = isRTL() ? href + '.rtl.css' : href + '.css';
+          var fullhref = isRTL(href) ? href + '.rtl.css' : href + '.css';
           var linkTag = document.createElement("link");
           linkTag.rel = "stylesheet";
           linkTag.type = "text/css";
