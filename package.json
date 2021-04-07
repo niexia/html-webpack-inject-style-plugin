@@ -1,6 +1,6 @@
 {
   "name": "html-webpack-inject-style-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Dynamically inject css style assets when using webpack-rtl-plugin",
   "main": "index.js",
   "scripts": {

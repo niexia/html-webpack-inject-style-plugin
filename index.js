@@ -73,9 +73,9 @@ HtmlWebpackInjectStylePlugin.prototype.validateOptions = function () {
     throw new Error('The isRtl option is required.');
   }
   if (
-      this.isRtl.constructor !== RegExp &&
-      typeof this.isRtl !== 'function'
-    ) {
+    this.isRtl.constructor !== RegExp &&
+    typeof this.isRtl !== 'function'
+  ) {
     throw new Error('The isRtl must be a Regexp or Function.');
   }
 };
