@@ -1,8 +1,12 @@
 'use strict';
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+const isFunction = fun => typeof fun === 'function';
+
 function HtmlWebpackInjectStylePlugin (options) {
   var userOptions = options || {};
   this.isRtl = userOptions.isRtl;
+  this.modifyTag = userOptions.modifyTag;
   this.PluginName = 'HtmlWebpackInjectStylePlugin';
 }
 
@@ -39,7 +43,7 @@ HtmlWebpackInjectStylePlugin.prototype.applyCompilation = function applyCompilat
 HtmlWebpackInjectStylePlugin.prototype.processPluginGroup = function (htmlPluginData, callback) {
   this.validateOptions();
   var { head, styleAssets } = this.filterStyleAssets(htmlPluginData, 'headTags');
-  var scriptNode = this.generateScriptNode(styleAssets, this.isRtl);
+  var scriptNode = this.generateScriptNode(styleAssets, this.isRtl, this.modifyTag);
   var result = {
     ...htmlPluginData,
     headTags: [scriptNode, ...head]
@@ -54,7 +58,7 @@ HtmlWebpackInjectStylePlugin.prototype.processPluginGroup = function (htmlPlugin
 HtmlWebpackInjectStylePlugin.prototype.processPluginData = function (htmlPluginData, callback) {
   this.validateOptions();
   var { head, styleAssets } = this.filterStyleAssets(htmlPluginData);
-  var scriptNode = this.generateScriptNode(styleAssets, this.isRtl);
+  var scriptNode = this.generateScriptNode(styleAssets, this.isRtl, this.modifyTag);
   var result = {
     ...htmlPluginData,
     head: [scriptNode, ...head]
@@ -67,16 +71,23 @@ HtmlWebpackInjectStylePlugin.prototype.processPluginData = function (htmlPluginD
 };
 
 HtmlWebpackInjectStylePlugin.prototype.validateOptions = function () {
-  // validate the `isRtl`
+  // validate the Options
   // throw a error if the `isRtl` is invalid
   if (!this.isRtl) {
     throw new Error('The isRtl option is required.');
   }
   if (
     this.isRtl.constructor !== RegExp &&
-    typeof this.isRtl !== 'function'
+    !isFunction(this.isRtl)
   ) {
     throw new Error('The isRtl must be a Regexp or Function.');
+  }
+  // throw a error if the `modifyTag` is invalid
+  if (
+    this.modifyTag &&
+    !isFunction(this.modifyTag)
+  ) {
+    throw new Error('The modifyTag must be a Function.');
   }
 };
 
@@ -100,11 +111,14 @@ HtmlWebpackInjectStylePlugin.prototype.filterStyleAssets = function (pluginData,
   };
 };
 
-HtmlWebpackInjectStylePlugin.prototype.generateScriptNode = function (styleAssets, isRtl) {
+HtmlWebpackInjectStylePlugin.prototype.generateScriptNode = function (styleAssets, isRtl, modifyTag) {
   var styleAssetsHref = JSON.stringify(styleAssets.map(tag => tag.attributes.href.match(/(.*)\.css$/)[1]));
-  var genRtlFun = typeof isRtl === 'function'
+  var genRtlFun = isFunction(isRtl)
     ? `new Function("href","return (${isRtl.toString().split('\n').join('\\n')})(window, href)")`
     : `new Function("return ${isRtl}.test(document.cookie)")`;
+  var modifyTagFun = isFunction(modifyTag)
+    ? `new Function("link","return (${modifyTag.toString().split('\n').join('\\n')})(link)")`
+    : undefined;
   return {
     tagName: 'script',
     closeTag: true,
@@ -114,6 +128,7 @@ HtmlWebpackInjectStylePlugin.prototype.generateScriptNode = function (styleAsset
     innerHTML: `
       (function (){
         var isRTL = ${genRtlFun};
+        var modifyTag = ${modifyTagFun};
         var head = document.querySelector('head');
         ${styleAssetsHref}.forEach(function (href) {
           var fullhref = isRTL(href) ? href + '.rtl.css' : href + '.css';
@@ -121,6 +136,9 @@ HtmlWebpackInjectStylePlugin.prototype.generateScriptNode = function (styleAsset
           linkTag.rel = "stylesheet";
           linkTag.type = "text/css";
           linkTag.href = fullhref;
+          if (modifyTag) {
+            linkTag = modifyTag(linkTag);
+          }
           head.appendChild(linkTag);
         })
       })();
