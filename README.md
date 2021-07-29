@@ -9,7 +9,7 @@ It is expected that the corresponding styles can be loaded according to the lang
 
 Installation
 ------------
-You must be running webpack on Node v4.0.0 or higher.
+You must be running webpack on Node v3.0.0 or higher.
 
 Install the plugin with npm:
 ```shell
