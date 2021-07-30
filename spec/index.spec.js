@@ -246,12 +246,8 @@ describe('HtmlWebpackInjectStylePlugin', function () {
   });
 
   it('modifyTag is a function and should not inject any style link but a script to create links', function (done) {
-    function isRtl () {
-      return true;
-    }
-    function modifyTag (link) {
-      link.setAttribute('crossorigin', 'anonymous');
-      return link;
+    function isRtl (window, href) {
+      return !/test/.test(href) && /lang=(ar|he)/.test(window.location.href);
     }
     webpack({
       entry: path.join(__dirname, 'fixtures', 'entry.js'),
@@ -275,7 +271,10 @@ describe('HtmlWebpackInjectStylePlugin', function () {
         new HtmlWebpackPlugin(),
         new HtmlWebpackInjectStylePlugin({
           isRtl: isRtl,
-          modifyTag: modifyTag
+          modifyTag: function (link) {
+            link.setAttribute('crossorigin', 'anonymous');
+            return link;
+          }
         })
       ]
     }, function (err) {
